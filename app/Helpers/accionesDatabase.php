@@ -1,4 +1,5 @@
 <?php
+// MOVER ESTE ARCHIVO A app/Helpers y cambiar las rutas que utilicen esta 
 
 function EjecutarSQL ($servidor, $usuario, $contrasena, $basedatos, $sentenciaSQL) {
 	$conexion = mysqli_connect($servidor, $usuario, $contrasena, $basedatos);
@@ -26,6 +27,8 @@ function ConsultarSQL ($servidor, $usuario, $contrasena, $basedatos, $sentenciaS
 	return $registros;
 }
 
+
+
 function ejecutar_sql_configurado($sentenciaSQL): array {
     $mysqli=abrir_conexion_sql();
 
@@ -39,11 +42,4 @@ function ejecutar_sql_configurado($sentenciaSQL): array {
     }
 
     return $registro;
-}
-
-function abrir_conexion_sql(): mysqli{
-    mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-    global $servidor, $usuario, $contrasena, $basedatos;
-    include 'variables.php';
-    return new mysqli($servidor, $usuario, $contrasena, $basedatos);
 }

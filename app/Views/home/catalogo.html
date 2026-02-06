@@ -3,19 +3,19 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <link rel="stylesheet" href="Css/encabezado.css" type="text/css">
-    <link rel="stylesheet" href="Css/cartaPlantas.css" type="text/css">
+    <link rel="stylesheet" href="../../public/Css/encabezado.css" type="text/css">
+    <link rel="stylesheet" href="../../public/Css/cartaPlantas.css" type="text/css">
 
     <title>Catalogo</title>
 
-    <link href="Css/catalogo.css" rel="stylesheet">
+    <link href="../../public/Css/catalogo.css" rel="stylesheet">
 </head>
 <body>
 <header id="encabezado">
     <div class="encabezado-container">
         <div class="logo-container">
-            <img src="Recursos/Svg/logo_uady.svg" alt="logo UADY" class="logo">
-            <img src="Recursos/img/RSULogo.png" alt="logo RSU" class="logo">
+            <img src="../../public/Svg/logo_uady.svg" alt="logo UADY" class="logo">
+            <img src="../../public/img/RSULogo.png" alt="logo RSU" class="logo">
         </div>
         <div class="dicho-uady">
             <h4>"Luz, Ciencia y Verdad"</h4>
@@ -23,9 +23,9 @@
 
         <nav>
             <ul class="nav">
-                <li><a href="index.html">Inicio</a></li>
+                <li><a href="../home/index.html">Inicio</a></li>
                 <li><a href="">Catálogo</a></li>
-                <li><a href="contacto.html">Contacto</a></li>
+                <li><a href="../home/contacto.html">Contacto</a></li>
             </ul>
         </nav>
     </div>
@@ -47,7 +47,7 @@
             <form onsubmit="buscarPlantas(event)">
                 <input id="barrabusqueda" type="text" placeholder="Search.." name="search">
                 
-                <button type="submit"><img src="Recursos/img/lupa.png" width="30px" height="30px" align="center" alt="lupa"></button>
+                <button type="submit"><img src="../../public/img/lupa.png" width="30px" height="30px" align="center" alt="lupa"></button>
                 <!--<button type="submit"><img height="50px" alt="lupa"></button>-->
 
             </form>
@@ -58,8 +58,8 @@
         <div id="cardContainer" class="flexCards"></div>
     </div>
 </div>
-<script src="Js/ajax.js"></script>
-<script src="Js/cardInfo.js"></script>
-<script src="Js/catalogo.js"></script>
+<script src="../../public/Js/ajax.js"></script>
+<script src="../../public/Js/cardInfo.js"></script>
+<script src="../../public/Js/catalogo.js"></script>
 </body>
 </html>

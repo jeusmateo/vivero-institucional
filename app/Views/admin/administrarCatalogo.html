@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" href="../../public/Css/encabezado.css" type="text/css">
+    <link rel="stylesheet" href="../../public/Css/cartaPlantas.css" type="text/css">
+    <link rel="stylesheet" href="../../public/Css/administracionVivero.css">
+
+    <title>Catálogo - Administración</title>
+</head>
+
+<body>
+<header id="encabezado">
+    <div class="encabezado-container">
+        <div class="logo-container">
+            <img src="../../public/Svg/logo_uady.svg" alt="logo UADY" class="logo">
+            <img src="../../public/img/RSULogo.png" alt="logo RSU" class="logo">
+        </div>
+        <div class="dicho-uady">
+            <h4>"Luz, Ciencia y Verdad"</h4>
+        </div>
+
+        <nav>
+            <ul class="nav">
+                <li><a href="../home/index.html">Inicio</a></li>
+                <li><a href="../../Helpers/logout.php">Cerrar Sesion</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<div id="tituloCatalogo">
+    <pre></pre>
+    <b>Catálogo de plantas (Modo Admin)</b>
+    <br><br>
+</div>
+
+<div id="contenidoCatalogo" class="restriccion">
+    <div id="buscador">
+        <div id="contenedorBarraBusqueda">
+            <form onsubmit="buscarPlantas(event)">
+                <input id="barrabusqueda" type="text" placeholder="Search.." name="search">
+                <button type="submit">
+                    <img src="../../public/img/lupa.png" width="30px" height="30px" align="center" alt="lupa">
+                </button>
+            </form>
+        </div>
+        
+        <input type="button" value="Registrar nueva planta" class="agregarCarta"
+       onclick="location.href='formularioPlantas.php?accion=crear'">
+    </div>
+
+    <div id="cardScroller">
+        <div id="cardContainer" class="flexCards"></div>
+    </div>
+</div>
+
+<script src="../../public/Js/ajax.js"></script>
+<script src="../../public/Js/cardInfo.js"></script>
+<script src="../../public/Js/administracionVivero.js"></script>
+
+</body>
+</html>
