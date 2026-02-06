@@ -108,30 +108,6 @@ if ($id) {
             <div id="imagen-planta">
                 <a href="data/<?php echo $nombre_imagen ?>" download="<?php echo $nombre_imagen ?>"><button id="boton-descarga">Descargar</button></a>
                 <img alt="" height="700" src="data/<?php echo $nombre_imagen ?>" width="600">
-                <!--                <div id="imagen-texto">-->
-                <!--                    <table border="0" cellpadding="2px" id="tabla-imagen">-->
-                <!--                        <thead>-->
-                <!--                        <tr>-->
-                <!--                            <th colspan="2">ALTURA EN VIVERO</th>-->
-                <!--                        </tr>-->
-                <!--                        </thead>-->
-                <!---->
-                <!--                        <tbody>-->
-                <!--                        <tr>-->
-                <!--                            <td>Planta chica:</td>-->
-                <!--                            <td>40- 60 cm</td>-->
-                <!--                        </tr>-->
-                <!--                        <tr>-->
-                <!--                            <td>Árbol estándar:</td>-->
-                <!--                            <td>>1.2 m</td>-->
-                <!--                        </tr>-->
-                <!--                        <tr>-->
-                <!--                            <td>Árbol crecido:</td>-->
-                <!--                            <td>>2 m</td>-->
-                <!--                        </tr>-->
-                <!--                        </tbody>-->
-                <!--                    </table>-->
-                <!--                </div>-->
             </div>
             <div id="descripcion-planta">
                 <h3>Familia</h3>

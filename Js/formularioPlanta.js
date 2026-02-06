@@ -1,79 +1,58 @@
-let file = null;
-
-document.getElementById("dropZone").ondragover = function (ev) {
-    ev.preventDefault();
-    console.log("Arrastrando sobre la zona de drop");
-}
-
-document.getElementById("dropZone").ondrop = function (ev) {
-    ev.preventDefault();
-    console.log("Archivo arrastrado");
-
-    // Verificar si hay más de un archivo
-    if (ev.dataTransfer.files.length > 1) {
-        alert("Solo se permite un archivo.");
+async function autocompletarTrefle() {
+    const nombreInput = document.getElementById('nombreCientifico');
+    const query = nombreInput.value;
+    
+    if(!query) {
+        alert("Escribe un nombre científico primero (Ej: Delonix regia)");
         return;
     }
 
-    // Verificar que sea una imagen
-    if (!(ev.dataTransfer.files[0].type.startsWith("image/"))) {
-        console.log("Fichero rechazado");
-        alert("El archivo no es una imagen");
-        return;
-    }
+    nombreInput.style.backgroundColor = "#e8f0fe";
+    document.body.style.cursor = "wait";
+    
+    try {
+        const res = await fetch(`Php/api_trefle.php?q=${query}`);
+        const json = await res.json();
 
-    file = ev.dataTransfer.files[0];
+        if (json.data && json.data.length > 0) {
+            const planta = json.data[0];
+            
+            // 1. NOMBRE CIENTÍFICO (Corregimos mayúsculas/escritura)
+            document.getElementById('nombreCientifico').value = planta.scientific_name;
 
-    manageDroppedImage();
-}
+            // 2. FAMILIA (Manejo robusto: Objeto o Texto)
+            const inputFamilia = document.getElementById('nombreFamiliaTexto');
+            if (inputFamilia) {
+                let fam = "Desconocida";
+                if (planta.family) {
+                    // Si Trefle manda objeto {id:..., name:'Fabaceae'} o string 'Fabaceae'
+                    fam = (typeof planta.family === 'object' && planta.family.name) ? planta.family.name : planta.family;
+                }
+                inputFamilia.value = fam;
+            }
 
-document.getElementById("plantaForm").onsubmit = function (ev) {
-    const existingImage = document.querySelector("#preview>img");
+            // 3. IMAGEN (Si existe)
+            if (planta.image_url) {
+                const previewDiv = document.getElementById("preview");
+                previewDiv.innerHTML = `<img src="${planta.image_url}" style="max-width:100%; height:auto; border-radius:5px;" alt="Trefle Image">`;
+                
+                const inputOculto = document.getElementById('trefle_image_url');
+                if (inputOculto) inputOculto.value = planta.image_url;
+                
+                file = null; // Limpiamos selección manual previa
+            }
+            
+            // NOTA: Descripción y Usos NO se tocan, se dejan para llenado manual.
+            alert("¡Datos básicos cargados de Trefle!\n(Nombre, Familia e Imagen)");
 
-    if (!file && !existingImage) {
-        ev.preventDefault();
-        alert("Debes agregar una imagen antes de enviar el formulario.");
-        return false;
-    }
-
-    inputData = document.getElementsByTagName("input");
-
-    for (let i = 0; i < inputData.length; i++) {
-        if (inputData[i].type == "text" && inputData[i].value == "") {
-            ev.preventDefault();
-            alert("Debes poner texto aqui");
-            inputData[i].focus();
-            return false;
+        } else {
+            alert("No se encontró esa planta en Trefle.");
         }
+    } catch (e) {
+        console.error(e);
+        alert("Error consultando Trefle.");
+    } finally {
+        nombreInput.style.backgroundColor = "white";
+        document.body.style.cursor = "default";
     }
-
-    if (document.getElementById("descripcion").value === "") {
-        ev.preventDefault();
-        alert("Debes poner texto aqui");
-        document.getElementById("descripcion").focus();
-        return false;
-    }
-
-    return true;
-}
-
-function manageDroppedImage() {
-    const previewDiv = document.getElementById("preview");
-    previewDiv.innerHTML = "";
-
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            const img = document.createElement("img");
-            img.src = e.target.result;
-            previewDiv.appendChild(img);
-        };
-        reader.readAsDataURL(file);
-    }
-
-    // Agregar el archivo al input oculto
-    const fileInput = document.getElementById("fileInput");
-    const dataTransfer = new DataTransfer();
-    dataTransfer.items.add(file);
-    fileInput.files = dataTransfer.files;
 }

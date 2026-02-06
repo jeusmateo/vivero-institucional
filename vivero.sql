@@ -67,9 +67,6 @@ CREATE TABLE `arboles_familia` (
 --
 
 INSERT INTO `arboles_familia` (`id_familia`, `nombre`) VALUES
-(7, 'APOCYNACEAE'),
-(8, 'ANACARDIACEAE'),
-(26, 'SAPOTACEAE');
 
 -- --------------------------------------------------------
 
@@ -169,8 +166,8 @@ ALTER TABLE `arboles`
 --
 -- AUTO_INCREMENT for table `arboles_familia`
 --
-ALTER TABLE `arboles_familia`
-  MODIFY `id_familia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+ALTER TABLE `arboles_familia` 
+    MODIFY `nombre` VARCHAR(100) NOT NULL;
 
 --
 -- AUTO_INCREMENT for table `usuarios`
@@ -186,7 +183,7 @@ ALTER TABLE `usuarios`
 -- Constraints for table `arboles`
 --
 ALTER TABLE `arboles`
-  ADD CONSTRAINT `arboles_ibfk_1` FOREIGN KEY (`id_familia`) REFERENCES `arboles_familia` (`id_familia`) ON DELETE NO ACTION ON UPDATE CASCADE;
+ - ADD CONSTRAINT `arboles_ibfk_1` FOREIGN KEY (`id_familia`) REFERENCES `arboles_familia` (`id_familia`) ON DELETE NO ACTION ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

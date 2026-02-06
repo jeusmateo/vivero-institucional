@@ -1,6 +1,6 @@
 <?php
 session_start();
-if (!$_SESSION["valido"]) {
+if (!isset($_SESSION["valido"]) || !$_SESSION["valido"]) {
     header("location: ../inicio_de_sesion.php?estado=4");
     exit();
 }
@@ -8,111 +8,121 @@ if (!$_SESSION["valido"]) {
 global $servidor, $usuario, $contrasena, $basedatos, $carpeta_imagenes;
 include 'variables.php';
 include 'funciones.php';
-
-function isFieldsEmpty(): bool
-{
-    return empty($_REQUEST["nombreComun"]) ||
-        empty($_REQUEST["nombreCientifico"]) ||
-        empty($_REQUEST["familia"]) ||
-        empty($_REQUEST["fruto"]) ||
-        empty($_REQUEST["floracion"]) ||
-        empty($_REQUEST["descripcion"]) ||
-        empty($_REQUEST["usos"]);
-}
-
-if (isFieldsEmpty()) {
-    header("location: ../formularioPlantas.php");
-    exit();
-}
+require_once 'Service/solrIndex.php'; 
 
 $conexion = abrir_conexion_sql();
-$ruta_imagen = '';
 
-if (!empty($_REQUEST["id_planta"])) {
-    $id = sprintf("%d", $_REQUEST["id_planta"]);
-    $stmt = $conexion->prepare("SELECT nombre_imagen FROM arboles WHERE id_arbol = ?");
-    $stmt->bind_param('i', $id);
+// ... includes iniciales ...
+$conexion = abrir_conexion_sql();
+
+// FUNCIÓN CLAVE: CREA LA FAMILIA SI NO EXISTE
+function obtenerIdFamilia($nombreFamilia, $conn) {
+    if (empty($nombreFamilia) || $nombreFamilia === "[object Object]") {
+        $nombreFamilia = "Desconocida";
+    }
+    $nombreFamilia = trim($nombreFamilia);
+    
+    // 1. Buscar
+    $sql = "SELECT id_familia FROM arboles_familia WHERE nombre = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $nombreFamilia);
     $stmt->execute();
-    $stmt->bind_result($ruta_imagen);
-    $stmt->fetch();
-    $stmt->close();
+    $res = $stmt->get_result();
+    
+    if ($row = $res->fetch_assoc()) {
+        return $row['id_familia']; // Ya existía
+    }
+
+    // 2. Crear
+    $sqlInsert = "INSERT INTO arboles_familia (nombre) VALUES (?)";
+    $stmtInsert = $conn->prepare($sqlInsert);
+    $stmtInsert->bind_param("s", $nombreFamilia);
+    if ($stmtInsert->execute()) {
+        return $conn->insert_id; // Nueva ID creada
+    }
+    
+    // 3. Fallback (para no romper)
+    return 7; // O el ID de una familia "General" que tengas
 }
 
-if ($_FILES["imagen"]["error"] == UPLOAD_ERR_OK && $_FILES["imagen"]["size"] > 0) {
+// Recibimos el TEXTO del input readonly
+$nombreFamiliaTexto = isset($_REQUEST["nombreFamiliaTexto"]) ? $_REQUEST["nombreFamiliaTexto"] : "Desconocida";
+// Obtenemos el ID mágico
+$idFamiliaFinal = obtenerIdFamilia($nombreFamiliaTexto, $conexion);
+
+
+// --- MANEJO DE IMÁGENES ---
+$nombre_imagen_final = ''; 
+
+// A. Subida Manual
+if (isset($_FILES["imagen"]) && $_FILES["imagen"]["error"] == UPLOAD_ERR_OK && $_FILES["imagen"]["size"] > 0) {
     $tmp_name = $_FILES["imagen"]["tmp_name"];
-    $nombre_imagen = htmlentities(basename($_FILES["imagen"]["name"]));
-    $ruta_imagen = "$carpeta_imagenes/$nombre_imagen";
-
-    if (!file_exists($carpeta_imagenes)) {
-        mkdir($carpeta_imagenes);
+    $nombre_archivo = time() . "_" . htmlentities(basename($_FILES["imagen"]["name"])); 
+    $ruta_destino = "$carpeta_imagenes/$nombre_archivo";
+    if (!file_exists($carpeta_imagenes)) mkdir($carpeta_imagenes, 0777, true);
+    if (move_uploaded_file($tmp_name, $ruta_destino)) $nombre_imagen_final = $nombre_archivo;
+} 
+// B. Trefle URL
+elseif (!empty($_POST['trefle_image_url'])) {
+    $contenido = @file_get_contents($_POST['trefle_image_url']); 
+    if ($contenido) {
+        $nombre_archivo = "trefle_" . time() . ".jpg";
+        $ruta_destino = "$carpeta_imagenes/$nombre_archivo";
+        if (!file_exists($carpeta_imagenes)) mkdir($carpeta_imagenes, 0777, true);
+        file_put_contents($ruta_destino, $contenido);
+        $nombre_imagen_final = $nombre_archivo;
     }
-
-    if (!move_uploaded_file($tmp_name, $ruta_imagen)) {
-        header("location: ../formularioPlantas.php?error=2");
-        exit();
-    }
-} else {
-    header('location: ../formularioPlantas.php');
+}
+// C. Edición
+elseif (!empty($_REQUEST["id_planta"])) {
+    $id = (int)$_REQUEST["id_planta"];
+    $res = $conexion->query("SELECT nombre_imagen FROM arboles WHERE id_arbol = $id");
+    if ($row = $res->fetch_assoc()) $nombre_imagen_final = $row['nombre_imagen'];
 }
 
-// Obtener los datos del formulario
-$nombreComunF = htmlentities($_REQUEST["nombreComun"]);
-$nombreCientificoF = htmlentities($_REQUEST["nombreCientifico"]);
-$familiaF = htmlentities($_REQUEST["familia"]);
-$frutoF = htmlentities($_REQUEST["fruto"]);
-$floracionF = htmlentities($_REQUEST["floracion"]);
-$descripcionF = htmlentities($_REQUEST["descripcion"]);
-$usosF = htmlentities($_REQUEST["usos"]);
+if (empty($nombre_imagen_final)) $nombre_imagen_final = "RSULogo.png";
+
+
+// --- GUARDADO DE PLANTA ---
+$nombreComun = $_REQUEST["nombreComun"];
+$nombreCientifico = $_REQUEST["nombreCientifico"];
+$descripcion = $_REQUEST["descripcion"];
+$fruto = $_REQUEST["fruto"] ?? '';
+$floracion = $_REQUEST["floracion"] ?? '';
+$usos = $_REQUEST["usos"] ?? '';
+
+$id_planta_guardada = 0;
 
 if (empty($_REQUEST["id_planta"])) {
-    $stmt = $conexion->prepare("INSERT INTO arboles(
-        nombre_cientifico,
-        nombre_imagen,
-        id_familia,
-        nombre_comun,
-        descripcion,
-        fruto,
-        floracion,
-        usos
-    )
-    VALUES(?, ?, ?, ?, ?, ?, ?, ?)");
-
-    $stmt->bind_param(
-        "ssisssss",
-        $nombreCientificoF,
-        $nombre_imagen,
-        $familiaF,
-        $nombreComunF,
-        $descripcionF,
-        $frutoF,
-        $floracionF,
-        $usosF
-    );
+    // INSERT
+    $stmt = $conexion->prepare("INSERT INTO arboles(nombre_cientifico, nombre_imagen, id_familia, nombre_comun, descripcion, fruto, floracion, usos) VALUES(?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("ssisssss", $nombreCientifico, $nombre_imagen_final, $idFamiliaFinal, $nombreComun, $descripcion, $fruto, $floracion, $usos);
+    if ($stmt->execute()) $id_planta_guardada = $conexion->insert_id;
 } else {
-    $stmt = $conexion->prepare("UPDATE arboles
-    SET nombre_cientifico = ?,
-        nombre_imagen = ?,
-        id_familia = ?,
-        nombre_comun = ?,
-        descripcion = ?,
-        fruto = ?,
-        floracion = ?,
-        usos = ?
-    WHERE id_arbol = ?");
-
-    $stmt->bind_param(
-        "ssisssssi",
-        $nombreCientificoF,
-        $nombre_imagen,
-        $familiaF,
-        $nombreComunF,
-        $descripcionF,
-        $frutoF,
-        $floracionF,
-        $usosF,
-        $id
-    );
+    // UPDATE
+    $id_planta_guardada = $_REQUEST["id_planta"];
+    $stmt = $conexion->prepare("UPDATE arboles SET nombre_cientifico=?, nombre_imagen=?, id_familia=?, nombre_comun=?, descripcion=?, fruto=?, floracion=?, usos=? WHERE id_arbol=?");
+    $stmt->bind_param("ssisssssi", $nombreCientifico, $nombre_imagen_final, $idFamiliaFinal, $nombreComun, $descripcion, $fruto, $floracion, $usos, $id_planta_guardada);
+    $stmt->execute();
 }
 
-$stmt->execute();
+// --- SOLR ---
+if ($id_planta_guardada > 0) {
+    try {
+        $datosParaSolr = [
+            'id_arbol' => $id_planta_guardada,
+            'nombre_comun' => $nombreComun,
+            'nombre_cientifico' => $nombreCientifico,
+            'descripcion' => $descripcion,
+            'usos' => $usos,
+            'nombre_imagen' => $nombre_imagen_final,
+            'nombre_familia' => $nombreFamiliaTexto // Enviamos texto
+        ];
+        $indexer = new SolrIndex();
+        $indexer->indexarPlanta($datosParaSolr);
+    } catch (Throwable $e) { error_log($e->getMessage()); }
+}
+
+$conexion->close();
 header("location: ../administracionVivero.php");
+?>
