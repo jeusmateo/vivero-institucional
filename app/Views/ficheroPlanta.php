@@ -1,5 +1,5 @@
 <?php
-// 1. Configuración de errores para ver si algo falla
+// ESTE ARCHIVO TAMBIEN SE TENDRIA QUE MOVER DE LA VISTA
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);

@@ -1,6 +1,6 @@
 const ruta_imagenes = '../../public/data/'; 
 
-const RUTA_API = "../../public/api/obtener_plantas.php"; 
+const RUTA_API = "../../Helpers/obtener_plantas.php"; 
 
 window.onload = function () {
     cargarPlantas("");

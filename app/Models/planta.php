@@ -3,7 +3,7 @@ namespace app\Models;
 
 use app\Config\Database;
 
-class planta {
+class Planta {
 
     private $db;
 
@@ -96,4 +96,15 @@ class planta {
         $stmt->bind_param('i', $id);
         return $stmt->execute();
     }
+
+    public function obtenerFamilias() {
+    $sql = "SELECT id_familia, nombre_familia FROM arboles_familia";
+    $resultado = $this->db->query($sql);
+    
+    $familias = [];
+    while ($fila = $resultado->fetch_assoc()) {
+        $familias[] = $fila;
+    }
+    return $familias;
+}
 }

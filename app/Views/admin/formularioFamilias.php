@@ -1,5 +1,5 @@
 <?php
-
+// NO ESTA IMPLEMENTADO, NO SE PUEDEN AGREGAR FAMILIAS DESDE LA INTERFAZ ACTUALMENTE
 session_start();
 if (!isset($_SESSION["valido"]) || !$_SESSION["valido"]) {
     header("location: inicio_de_sesion.php?estado=4");

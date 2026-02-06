@@ -1,63 +1,3 @@
-<?php
-// 1. Configuración y Seguridad
-session_start();
-if (empty($_SESSION["valido"])) {
-    header("location: login.php?estado=4");
-    exit();
-}
-
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
-
-// 2. Incluir Modelos y Configuración
-require_once '../../Config/database.php';
-require_once '../../Models/planta.php';
-
-use app\Models\Planta;
-use app\Config\Database;
-
-// 3. Inicializar variables vacías
-$planta = [
-    'id_arbol' => '',
-    'nombre_comun' => '',
-    'nombre_cientifico' => '',
-    'id_familia' => '',
-    'fruto' => '',
-    'floracion' => '',
-    'descripcion' => '',
-    'usos' => '',
-    'nombre_imagen' => ''
-];
-
-$accion = filter_input(INPUT_GET, 'accion', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-$id_planta = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
-
-// 4. Si es EDICIÓN, cargamos los datos
-if ($accion == 'editar' && $id_planta > 0) {
-    try {
-        $modelo = new Planta();
-        $datos = $modelo->obtenerPorId($id_planta);
-        if ($datos) {
-            $planta = $datos;
-        }
-    } catch (Exception $e) {
-        die("Error al cargar planta: " . $e->getMessage());
-    }
-}
-
-// 5. Cargar Familias
-$db = Database::getConnection();
-
-$sqlFamilias = "SELECT id_familia, nombre_familia FROM arboles_familia"; 
-
-// Ejecutamos la consulta
-$resultFamilias = $db->query($sqlFamilias);
-
-if (!$resultFamilias) {
-    die("Error al cargar familias: " . $db->error . "<br>Revisa el nombre de la columna en la línea 55 de formularioPlantas.php");
-}
-?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -72,7 +12,6 @@ if (!$resultFamilias) {
         button { padding: 10px 20px; background-color: #C79316; color: white; border: none; cursor: pointer; }
         button:hover { background-color: #a67c12; }
         img.preview-img { max-width: 200px; display: block; margin: 10px auto; }
-        .encabezado-container { display: flex; align-items: center; justify-content: space-between; background: white; padding: 10px; }
         .nav { list-style: none; display: flex; gap: 15px; }
         .nav a { text-decoration: none; color: #333; }
     </style>
@@ -82,8 +21,8 @@ if (!$resultFamilias) {
 <header id="encabezado">
     <div class="encabezado-container">
         <div class="logo-container">
-            <img src="../../public/Svg/logo_uady.svg" alt="logo UADY" width="80">
-            <img src="../../public/img/RSULogo.png" alt="logo RSU" width="80">
+            <img src="../public/Svg/logo_uady.svg" alt="logo UADY" width="80">
+            <img src="../public/img/RSULogo.png" alt="logo RSU" width="80">
         </div>
         <div class="dicho-uady">
             <h4>"Luz, Ciencia y Verdad"</h4>
@@ -91,7 +30,7 @@ if (!$resultFamilias) {
         <nav>
             <ul class="nav">
                 <li><a href="administrarCatalogo.html">Volver al Catálogo</a></li>
-                <li><a href="login.php?estado=5">Cerrar Sesión</a></li>
+                <li><a href="../Helpers/logout.php">Cerrar Sesión</a></li>
             </ul>
         </nav>
     </div>
@@ -126,16 +65,13 @@ if (!$resultFamilias) {
             <label>Familia:</label>
             <select name="familia" required>
                 <option value="">-- Seleccione una familia --</option>
-                <?php 
-                if ($resultFamilias) {
-                    while($fam = $resultFamilias->fetch_assoc()) {
-                        // CORRECCIÓN 3: Aquí también cambié 'nombre' por 'familia' (o el nombre real de tu columna)
-                        $selected = ($fam['id_familia'] == $planta['id_familia']) ? 'selected' : '';
-                        // Usamos $fam['familia'] asumiendo que ese es el nombre correcto
-                        echo "<option value='{$fam['id_familia']}' $selected>{$fam['nombre_familia']}</option>";
-                    }
-                }
-                ?>
+                <?php foreach ($familias as $fam): ?>
+                    <?php $nombreFam = isset($fam['nombre_familia']) ? $fam['nombre_familia'] : (isset($fam['nombre']) ? $fam['nombre'] : 'Sin Nombre'); ?>
+                    <?php $selected = ($fam['id_familia'] == $planta['id_familia']) ? 'selected' : ''; ?>
+                    <option value="<?= $fam['id_familia'] ?>" <?= $selected ?>>
+                        <?= $nombreFam ?>
+                    </option>
+                <?php endforeach; ?>
             </select>
 
             <label>Fruto:</label>
@@ -153,16 +89,16 @@ if (!$resultFamilias) {
             <div style="text-align: center; margin: 20px 0;">
                 <?php if (!empty($planta['nombre_imagen'])): ?>
                     <p>Imagen actual:</p>
-                    <img src="../../public/img/<?php echo $planta['nombre_imagen']; ?>" 
-                         class="preview-img" 
-                         alt="Imagen actual"
-                         onerror="this.src='../../public/img/RSULogo.png'">
+                    <img src="../../public/img/<?= $planta['nombre_imagen'] ?>" 
+                    class="preview-img" 
+                    alt="Imagen actual"
+                    onerror="this.onerror=null; this.src='../public/img/RSULogo.png';">
                 <?php else: ?>
                     <p>Sin imagen asignada</p>
                 <?php endif; ?>
             </div>
 
-            <label>Subir nueva imagen (Deja vacío para mantener la actual):</label>
+            <label>Subir nueva imagen:</label>
             <input type="file" name="imagen" accept="image/*">
 
             <br><br>

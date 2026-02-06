@@ -1,5 +1,5 @@
 // Ajustamos las rutas relativas desde app/Views/admin/
-const RUTA_API = "../../public/api/obtener_plantas.php";
+const RUTA_API = "../../Helpers/obtener_plantas.php";
 const RUTA_IMAGENES = "../../public/img/";
 
 window.onload = function () {
@@ -56,11 +56,10 @@ function cargarPlantas(searchTerm) {
                 newCard.appendChild(plantName);
 
                 // Al hacer click, llevamos al formulario de edición
-                // Nota: Asegúrate de que formularioPlantas.php esté en la misma carpeta (app/Views/admin/)
+                // Nota: Asegúrate de que formularioPlantas.php esté en la misma carpeta (app/Helpers/)
                 newCard.onclick = function () {
-                    location.href = "formularioPlantas.php?accion=editar&id=" + planta.id_arbol;
-                }
-                
+                location.href = "../../Helpers/formularioPlantas.php?accion=editar&id=" + planta.id_arbol;
+                };
                 cardContainer.appendChild(newCard);
             });
         } catch (e) {

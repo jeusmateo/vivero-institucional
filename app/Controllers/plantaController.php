@@ -137,4 +137,44 @@ class plantaController {
         }
         exit();
     }
+
+    public function obtenerDatosParaFormulario() {
+        // 1. Recoger Inputs
+        // (Nota: Si tu PHP es viejo y falla FILTER_SANITIZE_FULL_SPECIAL_CHARS, usa FILTER_SANITIZE_STRING)
+        $accion = filter_input(INPUT_GET, 'accion', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+        $id_planta = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+
+        // 2. Inicializar variables
+        $datos = [
+            'planta' => [
+                'id_arbol' => '', 'nombre_comun' => '', 'nombre_cientifico' => '',
+                'id_familia' => '', 'fruto' => '', 'floracion' => '',
+                'descripcion' => '', 'usos' => '', 'nombre_imagen' => ''
+            ],
+            'familias' => [],
+            'error' => null
+        ];
+
+        $modelo = new \app\Models\Planta();
+
+        // 3. Lógica de Editar
+        if ($accion == 'editar' && $id_planta > 0) {
+            try {
+                $plantaEncontrada = $modelo->obtenerPorId($id_planta);
+                if ($plantaEncontrada) {
+                    $datos['planta'] = $plantaEncontrada;
+                }
+            } catch (\Exception $e) {
+                $datos['error'] = "Error al cargar planta: " . $e->getMessage();
+            }
+        }
+
+        // 4. Obtener Familias
+        $datos['familias'] = $modelo->obtenerFamilias();
+
+        // --- CORRECCIÓN AQUÍ ---
+        // NO hacemos 'require'. Solo devolvemos los datos.
+        // El archivo 'Helpers/formularioPlantas.php' recibirá estos datos y él cargará la vista.
+        return $datos; 
+    }
 }

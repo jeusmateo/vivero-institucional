@@ -4,8 +4,8 @@ header('Content-Type: application/json');
 
 // 2. Incluir manualmente tus archivos de configuración y modelo
 // Ajusta estos "require" según tu estructura de carpetas real
-require_once '../../Config/database.php';
-require_once '../../Models/planta.php';
+require_once '../Config/database.php';
+require_once '../Models/planta.php';
 
 use app\Models\planta;
 

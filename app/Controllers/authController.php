@@ -68,12 +68,12 @@ class AuthController {
             setcookie("usuarioRecordado", "", time() - 3600, "/");
         }
 
-        header("location: ../Views/admin/login.php?estado=5");
+        header("location: ../Views/admin/login.html?estado=5");
         exit();
     }
 
     private function redirigirLogin($codigo) {
-        header("location: ../Views/admin/login.php?estado=" . $codigo);
+        header("location: ../Views/admin/login.html?estado=" . $codigo);
         exit();
     }
 }
